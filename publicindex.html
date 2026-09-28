@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#090d14">
+  <title>ANON Browser</title>
+
+  <style>
+    :root {
+      --bg: #090d14;
+      --panel: rgba(20, 27, 39, .82);
+      --line: rgba(255,255,255,.11);
+      --text: #f5f7fb;
+      --muted: #8e99ab;
+      --accent: #6cc7ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    button, input {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .browser {
+      width: 100%;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(108,199,255,.12), transparent 30%),
+        radial-gradient(circle at 90% 10%, rgba(150,100,255,.10), transparent 28%),
+        #090d14;
+    }
+
+    .toolbar {
+      flex: 0 0 auto;
+      padding: max(10px, env(safe-area-inset-top)) 10px 10px;
+      background: rgba(10,15,23,.90);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    .toolbar-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 5px;
+    }
+
+    .icon-button {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,.055);
+      border: 1px solid var(--line);
+      font-size: 20px;
+    }
+
+    .icon-button:disabled {
+      opacity: .3;
+    }
+
+    .address {
+      flex: 1;
+      min-width: 0;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 11px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.065);
+      border: 1px solid var(--line);
+    }
+
+    .address input {
+      min-width: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: white;
+      font-size: 14px;
+    }
+
+    .address .lock {
+      color: #65da95;
+      font-size: 11px;
+    }
+
+    .go {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: rgba(108,199,255,.13);
+      border: 1px solid rgba(108,199,255,.20);
+    }
+
+    .status {
+      margin-top: 7px;
+      padding: 0 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #63d991;
+      box-shadow: 0 0 12px rgba(99,217,145,.7);
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      background: white;
+    }
+
+    #frame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: none;
+      background: white;
+    }
+
+    .home {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      display: flex;
+      justify-content: center;
+      padding: 40px 16px;
+      background:
+        radial-gradient(circle at 50% 25%, rgba(108,199,255,.13), transparent 34%),
+        #0d131d;
+    }
+
+    .home-inner {
+      width: min(820px, 100%);
+      margin: auto;
+      text-align: center;
+    }
+
+    .logo {
+      width: 78px;
+      height: 78px;
+      margin: 0 auto 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 25px;
+      background: linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.045));
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: inset 0 1px rgba(255,255,255,.15), 0 30px 70px rgba(0,0,0,.30);
+      font-size: 32px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 6vw, 58px);
+      letter-spacing: -.05em;
+    }
+
+    .subtitle {
+      max-width: 620px;
+      margin: 12px auto 28px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .search-box {
+      width: min(760px, 100%);
+      min-height: 58px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 8px 7px 17px;
+      border-radius: 19px;
+      background: rgba(255,255,255,.075);
+      border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    .search-icon {
+      color: var(--muted);
+      font-size: 19px;
+    }
+
+    #searchInput {
+      flex: 1;
+      min-width: 0;
+      height: 44px;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: white;
+      font-size: 16px;
+    }
+
+    #searchButton {
+      height: 44px;
+      padding: 0 18px;
+      border-radius: 13px;
+      background: rgba(108,199,255,.17);
+      border: 1px solid rgba(108,199,255,.22);
+      font-weight: 600;
+    }
+
+    .results {
+      width: min(820px, 100%);
+      margin: 24px auto 0;
+      text-align: left;
+      display: grid;
+      gap: 10px;
+    }
+
+    .result {
+      padding: 16px;
+      border-radius: 17px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid var(--line);
+      transition: background .2s ease, transform .15s ease;
+    }
+
+    .result:hover {
+      background: rgba(255,255,255,.08);
+      transform: translateY(-1px);
+    }
+
+    .result a {
+      color: #8bd7ff;
+      text-decoration: none;
+      font-size: 17px;
+      font-weight: 650;
+    }
+
+    .result-url {
+      margin-top: 4px;
+      color: #63d991;
+      font-size: 11px;
+      word-break: break-all;
+    }
+
+    .result-snippet {
+      margin-top: 8px;
+      color: #a8b2c2;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 18px;
+      font-size: 13px;
+    }
+
+    .bottom {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      padding: 8px 10px max(8px, env(safe-area-inset-bottom));
+      background: rgba(10,15,23,.90);
+      border-top: 1px solid var(--line);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    .bottom button {
+      min-width: 70px;
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid var(--line);
+      font-size: 11px;
+    }
+
+    @media (max-width: 600px) {
+      .nav .icon-button {
+        width: 37px;
+      }
+
+      .build {
+        display: none;
+      }
+
+      .bottom button {
+        min-width: 58px;
+        padding: 0 8px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="browser">
+
+  <header class="toolbar">
+    <div class="toolbar-row">
+
+      <div class="nav">
+        <button id="back" class="icon-button">‹</button>
+        <button id="forward" class="icon-button">›</button>
+      </div>
+
+      <div class="address">
+        <span class="lock">●</span>
+        <input
+          id="address"
+          type="text"
+          inputmode="url"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          placeholder="Pesquisar ou inserir endereço"
+        >
+        <button id="go" class="go">↵</button>
+      </div>
+
+      <button id="reload" class="icon-button">↻</button>
+
+    </div>
+
+    <div class="status">
+      <div class="status-left">
+        <span class="status-dot"></span>
+        <span id="statusText">Pronto</span>
+      </div>
+
+      <span class="build">ANON BROWSER · SERPAPI · DEV 0.4.0</span>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <iframe
+      id="frame"
+      title="Página Web"
+      allow="fullscreen; picture-in-picture"
+    ></iframe>
+
+    <section id="home" class="home">
+      <div class="home-inner">
+
+        <div class="logo">◈</div>
+
+        <h1>ANON Browser</h1>
+
+        <p class="subtitle">
+          Pesquisa Google através do SerpApi e abre páginas web no navegador.
+          A interface foi desenhada para tablets e toque.
+        </p>
+
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+
+          <input
+            id="searchInput"
+            type="text"
+            autocomplete="off"
+            autocapitalize="off"
+            placeholder="Pesquisar no Google..."
+          >
+
+          <button id="searchButton">
+            Pesquisar
+          </button>
+        </div>
+
+        <div id="results" class="results"></div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom">
+    <button id="homeButton">⌂ Home</button>
+    <button id="googleButton">◎ Google</button>
+    <button id="openButton">↗ Abrir</button>
+    <button id="newTabButton">＋ Nova</button>
+  </nav>
+
+</div>
+
+<script>
+  const frame = document.getElementById("frame");
+  const home = document.getElementById("home");
+
+  const address = document.getElementById("address");
+  const go = document.getElementById("go");
+  const reload = document.getElementById("reload");
+
+  const back = document.getElementById("back");
+  const forward = document.getElementById("forward");
+
+  const searchInput = document.getElementById("searchInput");
+  const searchButton = document.getElementById("searchButton");
+  const results = document.getElementById("results");
+
+  const statusText = document.getElementById("statusText");
+
+  const homeButton = document.getElementById("homeButton");
+  const googleButton = document.getElementById("googleButton");
+  const openButton = document.getElementById("openButton");
+  const newTabButton = document.getElementById("newTabButton");
+
+  let currentUrl = "";
+  let historyStack = [];
+  let historyIndex = -1;
+
+  function normalizeUrl(value) {
+    const input = value.trim();
+
+    if (!input) {
+      return "";
+    }
+
+    if (/^https?:\/\//i.test(input)) {
+      return input;
+    }
+
+    if (/^[a-z0-9.-]+\.[a-z]{2,}/i.test(input)) {
+      return "https://" + input;
+    }
+
+    return "https://www.google.com/search?q=" +
+      encodeURIComponent(input);
+  }
+
+  function updateNav() {
+    back.disabled = historyIndex <= 0;
+    forward.disabled =
+      historyIndex < 0 ||
+      historyIndex >= historyStack.length - 1;
+  }
+
+  function navigate(url, addHistory = true) {
+    const normalized = normalizeUrl(url);
+
+    if (!normalized) {
+      return;
+    }
+
+    currentUrl = normalized;
+
+    if (addHistory) {
+      historyStack = historyStack.slice(0, historyIndex + 1);
+      historyStack.push(normalized);
+      historyIndex++;
+    }
+
+    address.value = normalized;
+    home.style.display = "none";
+    frame.style.display = "block";
+
+    statusText.textContent = "A carregar…";
+    frame.src = normalized;
+
+    updateNav();
+  }
+
+  function showHome() {
+    currentUrl = "";
+    address.value = "";
+    frame.src = "about:blank";
+    frame.style.display = "none";
+    home.style.display = "flex";
+    statusText.textContent = "Página inicial";
+  }
+
+  function searchGoogle() {
+    const query = searchInput.value.trim();
+
+    if (!query) {
+      return;
+    }
+
+    searchButton.disabled = true;
+    searchButton.textContent = "A pesquisar…";
+    statusText.textContent = "A consultar Google…";
+    results.innerHTML = "";
+
+    fetch("/api/search?q=" + encodeURIComponent(query))
+      .then(async response => {
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Erro na pesquisa");
+        }
+
+        return data;
+      })
+      .then(data => {
+        renderResults(data.organic_results || []);
+        statusText.textContent = "Pesquisa concluída";
+      })
+      .catch(error => {
+        results.innerHTML =
+          '<div class="empty">' +
+          escapeHtml(error.message) +
+          "</div>";
+
+        statusText.textContent = "Erro na pesquisa";
+      })
+      .finally(() => {
+        searchButton.disabled = false;
+        searchButton.textContent = "Pesquisar";
+      });
+  }
+
+  function renderResults(items) {
+    if (!items.length) {
+      results.innerHTML =
+        '<div class="empty">Nenhum resultado encontrado.</div>';
+
+      return;
+    }
+
+    results.innerHTML = items
+      .slice(0, 10)
+      .map(item => {
+        const title = escapeHtml(item.title || "Sem título");
+        const snippet = escapeHtml(item.snippet || "");
+        const link = item.link || "";
+        const displayLink = escapeHtml(link);
+
+        return `
+          <article class="result">
+            <a href="${escapeAttribute(link)}"
+               target="_self"
+               class="result-link">
+              ${title}
+            </a>
+
+            <div class="result-url">
+              ${displayLink}
+            </div>
+
+            <div class="result-snippet">
+              ${snippet}
+            </div>
+          </article>
+        `;
+      })
+      .join("");
+
+    document.querySelectorAll(".result-link").forEach(link => {
+      link.addEventListener("click", event => {
+        event.preventDefault();
+        navigate(link.href);
+      });
+    });
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttribute(value) {
+    return escapeHtml(value);
+  }
+
+  searchButton.addEventListener("click", searchGoogle);
+
+  searchInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      searchGoogle();
+    }
+  });
+
+  go.addEventListener("click", () => {
+    navigate(address.value);
+  });
+
+  address.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      navigate(address.value);
+    }
+  });
+
+  back.addEventListener("click", () => {
+    if (historyIndex <= 0) {
+      return;
+    }
+
+    historyIndex--;
+    navigate(historyStack[historyIndex], false);
+  });
+
+  forward.addEventListener("click", () => {
+    if (historyIndex >= historyStack.length - 1) {
+      return;
+    }
+
+    historyIndex++;
+    navigate(historyStack[historyIndex], false);
+  });
+
+  reload.addEventListener("click", () => {
+    if (!currentUrl) {
+      return;
+    }
+
+    statusText.textContent = "A recarregar…";
+    frame.src = currentUrl;
+  });
+
+  homeButton.addEventListener("click", showHome);
+
+  googleButton.addEventListener("click", () => {
+    searchInput.focus();
+  });
+
+  openButton.addEventListener("click", () => {
+    if (!currentUrl) {
+      return;
+    }
+
+    window.open(
+      currentUrl,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  });
+
+  newTabButton.addEventListener("click", () => {
+    showHome();
+    searchInput.focus();
+  });
+
+  frame.addEventListener("load", () => {
+    if (currentUrl) {
+      statusText.textContent = "Página carregada";
+    }
+  });
+
+  updateNav();
+</script>
+
+</body>
+</html>
